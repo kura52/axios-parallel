@@ -2,8 +2,8 @@
   "name": "axios-parallel",
   "version": "1.0.8",
   "description": "Multithreaded async requests sender using Axios & Workers",
-  "main": "index.js",
-  "typings": "./index.d.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
     "dev": "node ./compiler.js --dev",
     "build": "node ./compiler.js"

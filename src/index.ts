@@ -32,49 +32,49 @@ function fetch(
       return resolve([]);
     }
 
-      const threads = [];
+    const threads = [];
 
-      // Chunk
-      for (let i = CPUs; i > 0; i--) {
-        const group = requests.splice(0, Math.ceil(requests.length / i));
+    // Chunk
+    for (let i = CPUs; i > 0; i--) {
+      const group = requests.splice(0, Math.ceil(requests.length / i));
 
-        if (group.length) {
-          threads.push(group);
+      if (group.length) {
+        threads.push(group);
+      }
+    }
+
+    if (!threads.length) {
+      console.error('[Fetch] failed to split requests on threads.');
+      return resolve([]);
+    }
+
+    let done = 0;
+    const results: any[] = [];
+
+    // Start Worker
+    threads.forEach((thread) => {
+      const worker = new Worker(WORKER_PATH, {
+        workerData: {
+          requests: thread,
+          limit: toFinite(limit) || 25
         }
-      }
-
-      if (!threads.length) {
-        console.error('[Fetch] failed to split requests on threads.');
-        return resolve([]);
-      }
-
-      let done = 0;
-      const results: any[] = [];
-
-      // Start Worker
-      threads.forEach((thread) => {
-        const worker = new Worker(WORKER_PATH, {
-          workerData: {
-            requests: thread,
-            limit: toFinite(limit) || 25
-          }
-        });
-
-        worker.once('message', (response) => {
-          if (Array.isArray(response) && response.length) {
-            response.forEach((res) => results.push(res));
-          }
-        });
-
-        worker.once('exit', () => {
-          worker.unref();
-          done++;
-
-          if (done === threads.length) {
-            resolve(results);
-          }
-        });
       });
+
+      worker.once('message', (response) => {
+        if (Array.isArray(response) && response.length) {
+          response.forEach((res) => results.push(res));
+        }
+      });
+
+      worker.once('exit', () => {
+        worker.unref();
+        done++;
+
+        if (done === threads.length) {
+          resolve(results);
+        }
+      });
+    });
   });
 }
 
