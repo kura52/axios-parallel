@@ -32,7 +32,6 @@ function fetch(
       return resolve([]);
     }
 
-    if (requests.length > 1) {
       const threads = [];
 
       // Chunk
@@ -76,15 +75,6 @@ function fetch(
           }
         });
       });
-    } else {
-      axios(requests[0])
-        .then((res) => {
-          resolve([{ request: requests[0], data: res.data, headers: res.headers }]);
-        })
-        .catch((error) => {
-          resolve([{ request: requests[0], error: error.message }]);
-        });
-    }
   });
 }
 
